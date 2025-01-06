@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload de PDFs</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .explorer-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .explorer-header {
+            margin-bottom: 20px;
+        }
+
+        .explorer-title {
+            font-size: 2em;
+            color: #333;
+        }
+
+        .explorer-panel {
+            border: 2px dashed #aaa;
+            background: #fff;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+            border-radius: 10px;
+            transition: border-color 0.3s;
+        }
+
+        .explorer-panel:hover {
+            border-color: #007bff;
+        }
+
+        .upload-form {
+            margin-top: 15px;
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        .upload-label {
+            display: inline-block;
+            padding: 10px 20px;
+            color: #fff;
+            background: #007bff;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .upload-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            color: #fff;
+            background: #28a745;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .upload-status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .upload-status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .upload-status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+    <script>
+        // Redireciona para HTTP se a página estiver em HTTPS
+        if (window.location.protocol === "https:") {
+            window.location.href = "http://" + window.location.hostname + window.location.pathname;
+        }
+    </script>
+</head>
+<body class="explorer-container">
+    <div class="explorer-header">
+        <h1 class="explorer-title">Upload de Arquivos</h1>
+    </div>
+    <div class="explorer-content">
+        <div class="explorer-panel">
+            <p>Arraste e solte os arquivos aqui ou clique para selecionar.</p>
+            <form id="uploadForm" enctype="multipart/form-data" class="upload-form">
+                <label for="file" class="upload-label">
+                    Escolher Arquivo
+                    <input type="file" id="file" name="file" accept=".pdf" required class="upload-input" />
+                </label>
+                <button type="submit" class="upload-button">Enviar</button>
+            </form>
+        </div>
+        <div id="status" class="upload-status"></div>
+    </div>
+
+    <script>
+        document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+    
+            const formData = new FormData();
+            const fileInput = document.getElementById("file");
+    
+            if (!fileInput.files[0]) {
+                alert("Por favor, selecione um arquivo.");
+                return;
+            }
+    
+            formData.append("file", fileInput.files[0]);
+    
+            try {
+                const response = await fetch("http://54.164.48.201:3000/upload-to-shared-folder", {
+                    method: "POST",
+                    body: formData,
+                });
+    
+                if (!response.ok) {
+                    throw new Error("Erro ao enviar o arquivo.");
+                }
+    
+                const result = await response.json();
+                document.getElementById("status").innerText = result.message;
+                document.getElementById("status").classList.add("success");
+            } catch (error) {
+                console.error("Erro ao fazer upload:", error);
+                document.getElementById("status").innerText = "Erro ao fazer upload.";
+                document.getElementById("status").classList.add("error");
+            }
+        });
+    </script>
+</body>
+</html>
